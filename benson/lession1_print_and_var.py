@@ -29,11 +29,11 @@ print("金鋒心情好",fong_mood)
 
 
 # 型態
-##字串
+##字串 str
 x = "雅音"
-##數字
+##數字 int
 y = 120
 u = 3.14
-##布林
+##布林 boolean
 r = True
 c = False
