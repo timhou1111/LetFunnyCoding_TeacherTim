@@ -61,7 +61,7 @@ x[0] = "朱垠"
 print(x)
 
 my_best_love = ("雅英", "多慧")
-my_best_love[0] = "朱垠"
+my_best_love[0] = "朱垠" #取值跟陣列一樣
 print(my_best_love)
 
 #tuple --> 恆久不變的定律 
