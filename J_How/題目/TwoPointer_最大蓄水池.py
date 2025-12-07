@@ -35,3 +35,18 @@
 # 輸入: height = [1,8,6,2,5,4,8,3,7]
 # 輸出: 49
 # 解釋: 上面的垂直線條由陣列 [1,8,6,2,5,4,8,3,7] 表示。在這個情況下，容器能容納的最大水量面積（藍色區域）是 49。
+
+
+x = [1,8,6,2,5,4,8,3,7]
+max_water = -1
+
+for i in range(len(x)):
+    for j in range(i,len(x)):
+        if min(i,j) * (j-i) > max_water:
+            max_water = min(i,j) * (j-i)
+
+
+
+
+
+

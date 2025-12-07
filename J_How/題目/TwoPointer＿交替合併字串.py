@@ -19,7 +19,7 @@
 # 解釋：注意 word2 比較長，所以 "rs" 被接在最後面。
 # word1:  a   b 
 # word2:    p   q   r   s
-# 合併後: a p b q   r   s
+# 合併後: apbqrs
 # ```
 
 # ### 範例 3：
@@ -37,3 +37,26 @@
 
 # 1 <= word1.length, word2.length <= 100
 # word1 和 word2 只包含小寫英文字母
+
+word_1 = input()
+word_1_length = len(word_1)
+word_2 = input()
+word_2_length =len(word_2)
+
+pick_number = 0
+ans = ""
+
+while word_1_length > pick_number and word_2_length > pick_number:
+    ans = ans + word_1[pick_number]
+    ans = ans + word_2[pick_number]
+    pick_number += 1
+
+while word_1_length > pick_number:
+    ans = ans + word_1[pick_number]
+    pick_number += 1
+
+while word_2_length > pick_number:
+    ans = ans + word_2[pick_number]
+    pick_number += 1
+    
+print(ans)
