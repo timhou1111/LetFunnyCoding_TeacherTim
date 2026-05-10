@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二維陣列變換教學工具：旋轉與鏡像</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Microsoft JhengHei';
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            margin: 0;
+        }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .instructions { color: #555; margin-bottom: 20px; text-align: center; line-height: 1.6; }
+        
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:active { transform: scale(0.95); }
+        
+        .btn-rotate { background-color: #3498db; }
+        .btn-rotate:hover { background-color: #2980b9; }
+        .btn-mirror { background-color: #9b59b6; }
+        .btn-mirror:hover { background-color: #8e44ad; }
+        .btn-reset { background-color: #e74c3c; }
+        .btn-reset:hover { background-color: #c0392b; }
+
+        .board-wrapper {
+            position: relative;
+            padding: 40px;
+            margin-bottom: 20px;
+        }
+        
+        #matrixContainer {
+            position: relative;
+            background-color: #fff;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .label {
+            position: absolute;
+            font-weight: bold;
+            color: #7f8c8d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .cell {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cell.highlight {
+            background-color: #f1c40f;
+            color: #c0392b;
+            border-color: #e67e22;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .formula-box {
+            background-color: #fff;
+            border-left: 5px solid #1abc9c;
+            padding: 15px 25px;
+            border-radius: 4px;
+            min-width: 300px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .formula-title { font-weight: bold; color: #16a085; margin-bottom: 5px; border-bottom: 1px solid #eee; }
+        .code-text { font-family: 'Courier New', monospace; font-weight: bold; color: #d35400; }
+    </style>
+</head>
+<body>
+
+    <h1>二維陣列變換視覺化</h1>
+    <div class="instructions">
+        點擊數字<strong>高亮追蹤</strong>，點擊下方按鈕觀察座標位移。<br>
+        <strong>Mirror (鏡像)</strong> 僅改變排列順序，<strong>Rotate (旋轉)</strong> 會改變矩陣的長寬維度。
+    </div>
+
+    <div class="controls">
+        <button class="btn-rotate" onclick="rotate90()">順時針 90°</button>
+        <button class="btn-mirror" onclick="mirrorHorizontal()">左右翻轉 (Horizontal)</button>
+        <button class="btn-mirror" onclick="mirrorVertical()">上下翻轉 (Vertical)</button>
+        <button class="btn-reset" onclick="initMatrix()">重置</button>
+    </div>
+
+    <div class="board-wrapper">
+        <div id="matrixContainer"></div>
+    </div>
+
+    <div class="formula-box" id="formulaDisplay">
+        <div class="formula-title">座標變換公式</div>
+        <div id="formulaContent">等待操作中...</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('matrixContainer');
+        const formulaContent = document.getElementById('formulaContent');
+        
+        const CELL_SIZE = 70;
+        const GAP = 10;
+        
+        let cells = [];
+        let R = 3;
+        let C = 3;
+
+        function initMatrix() {
+            container.innerHTML = '';
+            cells = [];
+            R = 3; C = 3;
+            updateContainerSize();
+
+            let counter = 1;
+            for (let r = 0; r < R; r++) {
+                for (let c = 0; c < C; c++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cell';
+                    cellDiv.innerText = counter;
+                    cellDiv.onclick = function() { this.classList.toggle('highlight'); };
+                    container.appendChild(cellDiv);
+
+                    cells.push({ id: counter, r: r, c: c, el: cellDiv });
+                    counter++;
+                }
+            }
+            render();
+            formulaContent.innerHTML = "請選擇上方變換動作";
+        }
+
+        // 旋轉 90 度
+        function rotate90() {
+            const oldR = R;
+            const oldC = C;
+            cells.forEach(cell => {
+                const r = cell.r;
+                const c = cell.c;
+                cell.r = c;
+                cell.c = oldR - 1 - r;
+            });
+            R = oldC; C = oldR; 
+            updateContainerSize();
+            render();
+            showFormula("順時針 90 度旋轉", "nr = c", "nc = (R - 1) - r");
+        }
+
+        // 左右翻轉 (水平鏡像)
+        function mirrorHorizontal() {
+            cells.forEach(cell => {
+                // 列 (r) 不變，行 (c) 左右對調
+                cell.c = (C - 1) - cell.c;
+            });
+            render();
+            showFormula("左右翻轉 (Horizontal Mirror)", "nr = r", "nc = (C - 1) - c");
+        }
+
+        // 上下翻轉 (垂直鏡像)
+        function mirrorVertical() {
+            cells.forEach(cell => {
+                // 行 (c) 不變，列 (r) 上下對調
+                cell.r = (R - 1) - cell.r;
+            });
+            render();
+            showFormula("上下翻轉 (Vertical Mirror)", "nr = (R - 1) - r", "nc = c");
+        }
+
+        function updateContainerSize() {
+            container.style.width = `${C * CELL_SIZE + (C + 1) * GAP}px`;
+            container.style.height = `${R * CELL_SIZE + (R + 1) * GAP}px`;
+        }
+
+        function render() {
+            cells.forEach(cell => {
+                cell.el.style.top = `${GAP + cell.r * (CELL_SIZE + GAP)}px`;
+                cell.el.style.left = `${GAP + cell.c * (CELL_SIZE + GAP)}px`;
+                cell.el.style.width = `${CELL_SIZE}px`;
+                cell.el.style.height = `${CELL_SIZE}px`;
+            });
+
+            document.querySelectorAll('.label').forEach(el => el.remove());
+            for (let c = 0; c < C; c++) createLabel(c, -30, GAP + c*(CELL_SIZE+GAP), CELL_SIZE, 30);
+            for (let r = 0; r < R; r++) createLabel(r, GAP + r*(CELL_SIZE+GAP), -30, 30, CELL_SIZE);
+        }
+
+        function createLabel(txt, top, left, w, h) {
+            const l = document.createElement('div');
+            l.className = 'label';
+            l.innerText = txt;
+            l.style.top = top + 'px';
+            l.style.left = left + 'px';
+            l.style.width = w + 'px';
+            l.style.height = h + 'px';
+            container.appendChild(l);
+        }
+
+        function showFormula(title, rForm, cForm) {
+            formulaContent.innerHTML = `
+                <strong>${title}</strong><br>
+                <span class="code-text">${rForm}</span><br>
+                <span class="code-text">${cForm}</span>
+            `;
+        }
+
+        window.onload = initMatrix;
+    </script>
+</body>
+</html>

@@ -62,10 +62,6 @@ for i in range(col):
 print(count)
 
 
-for i in range(5):
-    print(i)
-    for j in range(3):
-        print("我愛你",j)
 
 
 
